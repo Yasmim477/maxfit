@@ -21,6 +21,9 @@ const assert = (condition, message) => {
 assert(html.includes("https://ewibqlguwibhyzkdjpac.supabase.co"), "Projeto Supabase esperado não encontrado");
 assert(!/service_role/i.test(html), "Uma chave service_role não pode aparecer no site");
 assert(html.includes("<style>") && html.includes("<script type=\"module\">"), "CSS ou JavaScript não foram incorporados");
+assert((html.match(/<!doctype html>/gi) || []).length === 1, "O HTML final contém documentos duplicados");
+assert((html.match(/<html\b/gi) || []).length === 1, "O HTML final contém mais de uma raiz HTML");
+assert((html.match(/<div id=\"root\"><\/div>/g) || []).length === 1, "A raiz React deve aparecer uma única vez");
 assert(htmlStats.size < 700_000, "O HTML ultrapassou o limite de 700 KB");
 assert((catalog.match(/product\(\{ id:/g) || []).length === 46, "O catálogo local deve conter 46 SKUs");
 assert(migration.includes("add column family_slug"), "Migração de famílias ausente");

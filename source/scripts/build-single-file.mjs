@@ -17,9 +17,18 @@ const [css, js] = await Promise.all([
 ]);
 
 const output = html
-  .replace(/<link[^>]+href="\/maxfit\/assets\/[^\"]+\.css"[^>]*>/, `<style>${css}</style>`)
-  .replace(/<script[^>]+src="\/maxfit\/assets\/[^\"]+\.js"[^>]*><\/script>/, `<script type="module">${js}\n//# sourceURL=maxfit-app.js</script>`)
+  // Replacement functions are intentional: a JavaScript bundle can contain
+  // `$&`, `$\`` and `$'`, which have special meaning in string replacements.
+  .replace(/<link[^>]+href="\/maxfit\/assets\/[^\"]+\.css"[^>]*>/, () => `<style>${css}</style>`)
+  .replace(
+    /<script[^>]+src="\/maxfit\/assets\/[^\"]+\.js"[^>]*><\/script>/,
+    () => `<script type="module">${js}\n//# sourceURL=maxfit-app.js</script>`,
+  )
   .replace(/[ \t]+$/gm, "");
+
+if ((output.match(/<!doctype html>/gi) || []).length !== 1) {
+  throw new Error("HTML final corrompido: documento duplicado dentro dos arquivos incorporados");
+}
 
 await writeFile(join(repoRoot, "index.html"), output);
 console.log(`Site do GitHub Pages criado (${(Buffer.byteLength(output) / 1024).toFixed(0)} KB)`);
