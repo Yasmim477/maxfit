@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
+import { FALLBACK_PRODUCTS, type Category, type Product } from "./catalog";
 
 declare global {
   interface Window {
@@ -19,43 +20,17 @@ const assetUrl = (path: string) => {
   return `${assetBase}/${normalizedPath}`;
 };
 
-type Category = "Proteínas" | "Performance" | "Saúde" | "Acessórios" | "Snacks";
-
-type Product = {
-  id: number;
-  name: string;
-  brand: string;
-  category: Category;
-  goal: string;
-  size: string;
-  price: number;
-  oldPrice: number;
-  rating: number;
-  reviews: number;
-  image: string;
-  badge?: string;
-  accent: string;
-};
-
 type CartState = Record<number, number>;
-
-const FALLBACK_PRODUCTS: Product[] = [
-  { id: 1, name: "100% Whey Prime", brand: "MAXFIT LABS", category: "Proteínas", goal: "Ganho de massa", size: "900 g · Chocolate belga", price: 139.9, oldPrice: 179.9, rating: 4.9, reviews: 438, image: "/images/product-whey.png", badge: "Mais vendido", accent: "#c8ff2e" },
-  { id: 2, name: "Creatina Monohidratada", brand: "MAXFIT LABS", category: "Performance", goal: "Força e potência", size: "300 g · 100% pura", price: 79.9, oldPrice: 109.9, rating: 4.9, reviews: 612, image: "/images/product-creatine.png", badge: "Top 1 creatina", accent: "#8cf7e7" },
-  { id: 3, name: "Pré-Treino Insane", brand: "MAXFIT LABS", category: "Performance", goal: "Energia e foco", size: "300 g · Frutas vermelhas", price: 94.9, oldPrice: 129.9, rating: 4.8, reviews: 284, image: "/images/product-preworkout.png", badge: "Novo", accent: "#ff5b63" },
-  { id: 4, name: "Whey Isolado Zero", brand: "MAXFIT LABS", category: "Proteínas", goal: "Definição muscular", size: "900 g · Baunilha", price: 189.9, oldPrice: 229.9, rating: 4.8, reviews: 197, image: "/images/product-whey.png", badge: "Zero lactose", accent: "#b6d8ff" },
-  { id: 5, name: "Multivitamínico Complete", brand: "MAXFIT NUTRITION", category: "Saúde", goal: "Saúde e imunidade", size: "120 cápsulas", price: 49.9, oldPrice: 64.9, rating: 4.7, reviews: 156, image: "/images/product-vitamins.png", accent: "#ffc94a" },
-  { id: 6, name: "Ômega 3 Ultra", brand: "MAXFIT NUTRITION", category: "Saúde", goal: "Bem-estar diário", size: "120 cápsulas · 1000 mg", price: 59.9, oldPrice: 79.9, rating: 4.8, reviews: 209, image: "/images/product-vitamins.png", badge: "Alta concentração", accent: "#5ed2ff" },
-  { id: 7, name: "Pasta de Amendoim Crunchy", brand: "MAXFIT FOODS", category: "Snacks", goal: "Energia saudável", size: "600 g · Crocante", price: 34.9, oldPrice: 44.9, rating: 4.9, reviews: 331, image: "/images/product-snacks.png", badge: "Sem açúcar", accent: "#e9ad62" },
-  { id: 8, name: "Protein Bar Trio", brand: "MAXFIT FOODS", category: "Snacks", goal: "Lanche proteico", size: "Caixa com 12 · 15 g proteína", price: 74.9, oldPrice: 89.9, rating: 4.7, reviews: 124, image: "/images/product-snacks.png", accent: "#d89cff" },
-  { id: 9, name: "Coqueteleira Pro 700", brand: "MAXFIT GEAR", category: "Acessórios", goal: "Praticidade", size: "700 ml · Mixer interno", price: 39.9, oldPrice: 54.9, rating: 4.8, reviews: 275, image: "/images/product-shaker.png", badge: "BPA free", accent: "#c8ff2e" },
-  { id: 10, name: "Kit Mini Bands Force", brand: "MAXFIT GEAR", category: "Acessórios", goal: "Treino funcional", size: "5 intensidades · Bolsa inclusa", price: 64.9, oldPrice: 84.9, rating: 4.8, reviews: 188, image: "/images/maxfit-accessories.png", accent: "#ff8f70" },
-  { id: 11, name: "Luva Training Grip", brand: "MAXFIT GEAR", category: "Acessórios", goal: "Proteção e aderência", size: "P ao GG · Par", price: 69.9, oldPrice: 89.9, rating: 4.6, reviews: 94, image: "/images/maxfit-accessories.png", accent: "#a6b0be" },
-  { id: 12, name: "Cinto Power Lift", brand: "MAXFIT GEAR", category: "Acessórios", goal: "Estabilidade e força", size: "Couro sintético · P ao GG", price: 119.9, oldPrice: 149.9, rating: 4.9, reviews: 143, image: "/images/maxfit-accessories.png", badge: "Linha premium", accent: "#f4cc79" },
-];
 
 const CATEGORY_OPTIONS = ["Todos", "Proteínas", "Performance", "Saúde", "Acessórios", "Snacks"] as const;
 const formatMoney = (value: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+const fallbackImage = (category: Category) => ({
+  "Proteínas": "assets/images/maxfit-whey-prime.webp",
+  "Performance": "assets/images/maxfit-recovery.webp",
+  "Saúde": "assets/images/maxfit-multi-daily.webp",
+  "Acessórios": "assets/images/maxfit-gear.webp",
+  "Snacks": "assets/images/maxfit-snacks.webp",
+})[category];
 
 function Icon({ name, size = 20 }: { name: string; size?: number }) {
   const paths: Record<string, React.ReactNode> = {
@@ -112,24 +87,37 @@ export default function Home() {
     let active = true;
 
     const mapProduct = (row: {
-      id: number; name: string; brand: string; category: string; goal: string;
+      id: number; slug: string; name: string; brand: string; category: string; goal: string;
       size: string; price: number; old_price: number; rating: number;
       reviews: number; image_path: string; badge: string | null; accent: string;
-    }): Product => ({
-      id: row.id,
-      name: row.name,
-      brand: row.brand,
-      category: row.category as Category,
-      goal: row.goal,
-      size: row.size,
-      price: Number(row.price),
-      oldPrice: Number(row.old_price),
-      rating: Number(row.rating),
-      reviews: row.reviews,
-      image: `/${row.image_path}`,
-      badge: row.badge || undefined,
-      accent: row.accent,
-    });
+      family_slug?: string | null; variant_name?: string | null; description?: string | null;
+      benefits?: string[] | null; stock?: number | null; sort_order?: number | null; featured?: boolean | null;
+    }): Product => {
+      const fallback = FALLBACK_PRODUCTS.find((item) => item.slug === row.slug || item.id === row.id);
+      return {
+        id: row.id,
+        slug: row.slug,
+        familySlug: row.family_slug || fallback?.familySlug || row.slug,
+        variantName: row.variant_name || fallback?.variantName || row.size,
+        name: row.name,
+        brand: row.brand,
+        category: row.category as Category,
+        goal: row.goal,
+        size: row.size,
+        price: Number(row.price),
+        oldPrice: Number(row.old_price),
+        rating: Number(row.rating),
+        reviews: row.reviews,
+        image: `/${row.image_path}`,
+        badge: row.badge || undefined,
+        accent: row.accent,
+        description: row.description || fallback?.description || "Qualidade Maxfit para acompanhar sua rotina de treino.",
+        benefits: row.benefits?.length ? row.benefits : fallback?.benefits || ["Qualidade selecionada", "Envio rápido", "Compra segura"],
+        stock: row.stock ?? fallback?.stock ?? 50,
+        sortOrder: row.sort_order ?? fallback?.sortOrder ?? row.id,
+        featured: row.featured ?? fallback?.featured ?? false,
+      };
+    };
 
     const loadProfile = async (currentUser: User) => {
       const { data } = await supabase.from("profiles").select("full_name").eq("id", currentUser.id).maybeSingle();
@@ -164,7 +152,7 @@ export default function Home() {
 
       const { data: catalog } = await supabase
         .from("products")
-        .select("id,name,brand,category,goal,size,price,old_price,rating,reviews,image_path,badge,accent")
+        .select("*")
         .eq("active", true)
         .order("id");
       if (active && catalog?.length) {
@@ -249,20 +237,34 @@ export default function Home() {
     return () => window.clearTimeout(timer);
   }, [toast]);
 
+  const productFamilies = useMemo(() => {
+    const representatives = new Map<string, Product>();
+    for (const item of [...products].sort((a, b) => a.sortOrder - b.sortOrder || a.id - b.id)) {
+      if (!representatives.has(item.familySlug)) representatives.set(item.familySlug, item);
+    }
+    return [...representatives.values()];
+  }, [products]);
+
   const filteredProducts = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase("pt-BR");
-    const list = products.filter((product) => {
+    const list = productFamilies.filter((product) => {
       const matchesCategory = category === "Todos" || product.category === category;
-      const matchesQuery = !normalized || `${product.name} ${product.brand} ${product.goal} ${product.category}`.toLocaleLowerCase("pt-BR").includes(normalized);
+      const variants = products.filter((item) => item.familySlug === product.familySlug);
+      const searchText = `${product.name} ${product.brand} ${product.goal} ${product.category} ${variants.map((item) => item.variantName).join(" ")}`;
+      const matchesQuery = !normalized || searchText.toLocaleLowerCase("pt-BR").includes(normalized);
       return matchesCategory && matchesQuery;
     });
     return [...list].sort((a, b) => {
       if (sort === "price-low") return a.price - b.price;
       if (sort === "price-high") return b.price - a.price;
       if (sort === "rating") return b.rating - a.rating || b.reviews - a.reviews;
-      return Number(Boolean(b.badge)) - Number(Boolean(a.badge)) || b.reviews - a.reviews;
+      return Number(b.featured) - Number(a.featured) || a.sortOrder - b.sortOrder;
     });
-  }, [category, query, sort, products]);
+  }, [category, query, sort, productFamilies, products]);
+
+  const getVariants = (product: Product) => products
+    .filter((item) => item.familySlug === product.familySlug)
+    .sort((a, b) => a.id - b.id);
 
   const cartItems = useMemo(() => products.filter((product) => cart[product.id]).map((product) => ({ ...product, quantity: cart[product.id] })), [cart, products]);
   const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -281,7 +283,7 @@ export default function Home() {
 
   const addToCart = (product: Product, openCart = false) => {
     setCart((current) => ({ ...current, [product.id]: (current[product.id] || 0) + 1 }));
-    setToast(`${product.name} foi adicionado`);
+    setToast(`${product.name} · ${product.variantName} foi adicionado`);
     setSelectedProduct(null);
     if (openCart) setCartOpen(true);
   };
@@ -333,7 +335,7 @@ export default function Home() {
         order_id: order.id,
         user_id: user.id,
         product_id: item.id,
-        product_name: item.name,
+        product_name: `${item.name} · ${item.variantName}`,
         unit_price: item.price,
         quantity: item.quantity,
       })),
@@ -466,9 +468,9 @@ export default function Home() {
               <div><strong>100%</strong><span>qualidade testada</span></div>
             </div>
           </div>
-          <div className="hero-visual" role="img" aria-label="Atletas treinando em uma academia moderna">
+          <div className="hero-visual" role="img" aria-label="Linha de suplementos Maxfit">
             <div className="hero-glow" />
-            <img src={assetUrl("images/maxfit-hero.png")} alt="Atletas Maxfit treinando" onError={(event) => { event.currentTarget.src = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1600&q=90"; }} />
+            <img src={assetUrl("assets/images/maxfit-hero.webp")} alt="Linha de produtos Maxfit em estúdio" />
             <div className="floating-badge badge-protein"><strong>24g</strong><span>proteína<br/>por dose</span></div>
             <div className="floating-badge badge-quality"><Icon name="shield" size={20}/><span>Qualidade<br/><strong>certificada</strong></span></div>
           </div>
@@ -498,19 +500,20 @@ export default function Home() {
           <label className="sort-box"><span>Ordenar:</span><select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Ordenar produtos"><option value="featured">Mais relevantes</option><option value="rating">Melhor avaliados</option><option value="price-low">Menor preço</option><option value="price-high">Maior preço</option></select><Icon name="chevron" size={16}/></label>
         </div>
 
-        <div className="catalog-status" title={catalogFromDatabase ? "Catálogo carregado do Supabase" : "Usando catálogo de segurança local"}><i className={catalogFromDatabase ? "online" : ""}/>{catalogFromDatabase ? "Catálogo conectado ao banco de dados" : "Catálogo disponível"}</div>
+        <div className="catalog-status" title={catalogFromDatabase ? "Catálogo carregado do Supabase" : "Usando catálogo de segurança local"}><i className={catalogFromDatabase ? "online" : ""}/>{catalogFromDatabase ? "Catálogo conectado ao banco de dados" : "Catálogo disponível"}<span>· {productFamilies.length} produtos · {products.length} opções</span></div>
         {query && <div className="search-result-info">Resultados para <strong>“{query}”</strong> · {filteredProducts.length} {filteredProducts.length === 1 ? "produto" : "produtos"}</div>}
         <div className="product-grid">
           {filteredProducts.map((product) => {
             const saving = Math.round((1 - product.price / product.oldPrice) * 100);
+            const variants = getVariants(product);
             return (
-              <article className="product-card" key={product.id}>
+              <article className="product-card" key={product.familySlug}>
                 <div className="product-media" style={{ "--product-accent": product.accent } as React.CSSProperties}>
                   {product.badge && <span className="product-badge">{product.badge}</span>}
                   <span className="discount-badge">-{saving}%</span>
                   <button className="favorite-button" aria-label={`Favoritar ${product.name}`}><Icon name="heart" size={18}/></button>
                   <button className="product-image-button" onClick={() => setSelectedProduct(product)} aria-label={`Ver detalhes de ${product.name}`}>
-                    <img src={assetUrl(product.image)} alt={product.name} loading="lazy" onError={(event) => { event.currentTarget.src = assetUrl(product.category === "Acessórios" ? "images/maxfit-accessories.png" : "images/maxfit-supplements.png"); }} />
+                    <img src={assetUrl(product.image)} alt={product.name} loading="lazy" onError={(event) => { event.currentTarget.src = assetUrl(fallbackImage(product.category)); }} />
                   </button>
                   <button className="quick-view" onClick={() => setSelectedProduct(product)}>Ver detalhes</button>
                 </div>
@@ -518,9 +521,10 @@ export default function Home() {
                   <div className="product-meta"><span>{product.brand}</span><Stars rating={product.rating} reviews={product.reviews}/></div>
                   <button className="product-name" onClick={() => setSelectedProduct(product)}>{product.name}</button>
                   <p className="product-size">{product.size}</p>
+                  {variants.length > 1 && <button className="variant-summary" onClick={() => setSelectedProduct(product)}>{variants.length} opções · Escolher {product.category === "Acessórios" ? "tamanho/cor" : "sabor"}</button>}
                   <div className="price-row">
                     <div><span className="old-price">{formatMoney(product.oldPrice)}</span><strong>{formatMoney(product.price)}</strong><small>no Pix</small></div>
-                    <button className="add-button" onClick={() => addToCart(product)} aria-label={`Adicionar ${product.name} ao carrinho`}><Icon name="plus" size={22}/></button>
+                    <button className="add-button" onClick={() => variants.length > 1 ? setSelectedProduct(product) : addToCart(product)} aria-label={variants.length > 1 ? `Escolher opção de ${product.name}` : `Adicionar ${product.name} ao carrinho`}><Icon name={variants.length > 1 ? "chevron" : "plus"} size={22}/></button>
                   </div>
                   <span className="installment">ou 3x de {formatMoney(product.price / 3)} sem juros</span>
                 </div>
@@ -544,7 +548,7 @@ export default function Home() {
       </section>
 
       <section className="editorial container">
-        <div className="editorial-image"><img src={assetUrl("images/maxfit-supplements.png")} alt="Linha de suplementos Maxfit" onError={(event) => { event.currentTarget.src = "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1200&q=88"; }}/></div>
+        <div className="editorial-image"><img src={assetUrl("assets/images/maxfit-hero.webp")} alt="Linha de suplementos Maxfit"/></div>
         <div className="editorial-copy"><span className="section-kicker">POR DENTRO DA FÓRMULA</span><h2>O que entra no pote<br/>faz <em>diferença.</em></h2><p>Na Maxfit, cada produto nasce de matérias-primas selecionadas, doses transparentes e testes rigorosos. Sem atalhos, sem ingredientes escondidos.</p><ul><li><span><Icon name="check" size={17}/></span> Ingredientes de alta pureza</li><li><span><Icon name="check" size={17}/></span> Laudos por lote e controle de qualidade</li><li><span><Icon name="check" size={17}/></span> Rótulos claros e doses efetivas</li></ul><button className="outline-button" onClick={() => selectCategory("Todos")}>Conheça nossos produtos <Icon name="arrow" size={18}/></button></div>
       </section>
 
@@ -592,7 +596,7 @@ export default function Home() {
                 <div className="cart-items">
                   {cartItems.map((item) => (
                     <article className="cart-item" key={item.id}>
-                      <div className="cart-item-image" style={{ "--product-accent": item.accent } as React.CSSProperties}><img src={assetUrl(item.image)} alt="" onError={(event) => { event.currentTarget.src = assetUrl(item.category === "Acessórios" ? "images/maxfit-accessories.png" : "images/maxfit-supplements.png"); }}/></div>
+                      <div className="cart-item-image" style={{ "--product-accent": item.accent } as React.CSSProperties}><img src={assetUrl(item.image)} alt="" onError={(event) => { event.currentTarget.src = assetUrl(fallbackImage(item.category)); }}/></div>
                       <div className="cart-item-info"><span>{item.brand}</span><strong>{item.name}</strong><small>{item.size}</small><div><div className="quantity"><button onClick={() => changeQuantity(item.id, -1)} aria-label="Diminuir quantidade"><Icon name="minus" size={15}/></button><b>{item.quantity}</b><button onClick={() => changeQuantity(item.id, 1)} aria-label="Aumentar quantidade"><Icon name="plus" size={15}/></button></div><strong>{formatMoney(item.price * item.quantity)}</strong></div></div>
                     </article>
                   ))}
@@ -613,7 +617,31 @@ export default function Home() {
       {selectedProduct && (
         <div className="modal-layer product-modal-layer" role="dialog" aria-modal="true" aria-labelledby="product-modal-title">
           <button className="modal-backdrop" aria-label="Fechar detalhes" onClick={() => setSelectedProduct(null)} />
-          <div className="product-modal"><button className="icon-button product-modal-close" onClick={() => setSelectedProduct(null)} aria-label="Fechar"><Icon name="x"/></button><div className="product-modal-image" style={{ "--product-accent": selectedProduct.accent } as React.CSSProperties}><img src={assetUrl(selectedProduct.image)} alt={selectedProduct.name} onError={(event) => { event.currentTarget.src = assetUrl(selectedProduct.category === "Acessórios" ? "images/maxfit-accessories.png" : "images/maxfit-supplements.png"); }}/></div><div className="product-modal-copy"><span className="section-kicker">{selectedProduct.brand}</span><h2 id="product-modal-title">{selectedProduct.name}</h2><Stars rating={selectedProduct.rating} reviews={selectedProduct.reviews}/><p>{selectedProduct.size}</p><div className="modal-benefits"><span><Icon name="check" size={15}/> Alta qualidade</span><span><Icon name="check" size={15}/> Envio rápido</span><span><Icon name="check" size={15}/> Compra segura</span></div><span className="old-price">{formatMoney(selectedProduct.oldPrice)}</span><div className="modal-price"><strong>{formatMoney(selectedProduct.price)}</strong><small>no Pix</small></div><p className="modal-installment">ou 3x de {formatMoney(selectedProduct.price / 3)} sem juros</p><button className="checkout-button" onClick={() => addToCart(selectedProduct, true)}>Adicionar ao carrinho <Icon name="bag" size={19}/></button></div></div>
+          <div className="product-modal">
+            <button className="icon-button product-modal-close" onClick={() => setSelectedProduct(null)} aria-label="Fechar"><Icon name="x"/></button>
+            <div className="product-modal-image" style={{ "--product-accent": selectedProduct.accent } as React.CSSProperties}>
+              <img src={assetUrl(selectedProduct.image)} alt={selectedProduct.name} onError={(event) => { event.currentTarget.src = assetUrl(fallbackImage(selectedProduct.category)); }}/>
+            </div>
+            <div className="product-modal-copy">
+              <span className="section-kicker">{selectedProduct.brand}</span>
+              <h2 id="product-modal-title">{selectedProduct.name}</h2>
+              <Stars rating={selectedProduct.rating} reviews={selectedProduct.reviews}/>
+              <p className="product-description">{selectedProduct.description}</p>
+              {getVariants(selectedProduct).length > 1 && (
+                <div className="variant-picker">
+                  <span>Escolha {selectedProduct.category === "Acessórios" ? "o tamanho ou a cor" : "o sabor"}</span>
+                  <div>{getVariants(selectedProduct).map((variant) => <button key={variant.id} className={variant.id === selectedProduct.id ? "active" : ""} onClick={() => setSelectedProduct(variant)}>{variant.variantName}</button>)}</div>
+                </div>
+              )}
+              <p className="selected-variant"><strong>Opção selecionada:</strong> {selectedProduct.size}</p>
+              <div className="modal-benefits">{selectedProduct.benefits.map((benefit) => <span key={benefit}><Icon name="check" size={15}/> {benefit}</span>)}</div>
+              <span className="stock-status"><i/> Em estoque · envio em até 24h</span>
+              <span className="old-price">{formatMoney(selectedProduct.oldPrice)}</span>
+              <div className="modal-price"><strong>{formatMoney(selectedProduct.price)}</strong><small>no Pix</small></div>
+              <p className="modal-installment">ou 3x de {formatMoney(selectedProduct.price / 3)} sem juros</p>
+              <button className="checkout-button" onClick={() => addToCart(selectedProduct, true)}>Adicionar esta opção ao carrinho <Icon name="bag" size={19}/></button>
+            </div>
+          </div>
         </div>
       )}
 
