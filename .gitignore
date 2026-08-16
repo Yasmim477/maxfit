@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+**/node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -37,6 +38,7 @@ yarn-error.log*
 next-env.d.ts
 /dist/
 /dist-pages/
+**/dist-pages/
 *.tsbuildinfo
 /.wrangler/
 /.sites-runtime/

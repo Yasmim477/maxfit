@@ -1,0 +1,223 @@
+/* Catálogo Maxfit 2026: packshots, famílias e seletores de variação. */
+.product-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.product-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.product-media {
+  background: radial-gradient(circle at 50% 45%, #fff 0, #f3f5ef 48%, #e6eae1 100%);
+}
+
+.product-media img {
+  object-fit: contain;
+  padding: 18px 22px 12px;
+  filter: drop-shadow(0 18px 22px #17200f24);
+}
+
+.product-card:hover .product-media img {
+  filter: drop-shadow(0 20px 25px #17200f30) saturate(1.04);
+  transform: scale(1.045);
+}
+
+.product-size {
+  margin-bottom: 12px;
+}
+
+.variant-summary {
+  color: #5e6d52;
+  background: #f1f5ea;
+  border: 1px solid #dce6ce;
+  border-radius: 7px;
+  width: max-content;
+  max-width: 100%;
+  margin: 0 0 14px;
+  padding: 6px 9px;
+  font-size: 8px;
+  font-weight: 760;
+  transition: all 0.2s;
+}
+
+.variant-summary:hover {
+  color: #426900;
+  background: #eaf4d8;
+  border-color: #bbd18f;
+}
+
+.price-row {
+  margin-top: auto;
+}
+
+.catalog-status span {
+  color: #8b9286;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 650;
+}
+
+.hero-visual > img {
+  object-fit: cover;
+  object-position: center;
+}
+
+.cart-item-image img {
+  object-fit: contain;
+  padding: 7px;
+  filter: drop-shadow(0 7px 8px #17200f1f);
+}
+
+.product-modal {
+  grid-template-columns: 1.04fr 0.96fr;
+  width: min(920px, 100%);
+}
+
+.product-modal-image {
+  display: grid;
+  place-items: center;
+  min-height: 570px;
+  background: radial-gradient(circle at center, #fff 0, #eff3ea 58%, #dfe6d7 100%);
+}
+
+.product-modal-image img {
+  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  padding: 34px;
+  filter: drop-shadow(0 26px 30px #17200f2b);
+}
+
+.product-modal-copy {
+  padding: 42px 42px 36px;
+}
+
+.product-description {
+  margin: 12px 0 15px !important;
+  line-height: 1.6;
+}
+
+.variant-picker {
+  margin: 15px 0 12px;
+}
+
+.variant-picker > span {
+  color: #3c4538;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.variant-picker > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 8px;
+}
+
+.variant-picker button {
+  color: #4f584b;
+  background: #fff;
+  border: 1px solid #d8ddd3;
+  border-radius: 7px;
+  min-height: 32px;
+  padding: 0 11px;
+  font-size: 9px;
+  font-weight: 720;
+  transition: all 0.18s;
+}
+
+.variant-picker button:hover {
+  border-color: #89977e;
+}
+
+.variant-picker button.active {
+  color: #17200f;
+  background: var(--lime);
+  border-color: #97c017;
+  box-shadow: 0 0 0 2px #c8ff2e2e;
+}
+
+.selected-variant {
+  color: #646d5f !important;
+  background: #f5f6f2;
+  border-radius: 7px;
+  margin: 0 0 13px !important;
+  padding: 9px 10px;
+  font-size: 9px !important;
+}
+
+.selected-variant strong {
+  color: #2d3529;
+}
+
+.stock-status {
+  color: #5a7540;
+  align-items: center;
+  gap: 6px;
+  margin: 1px 0 12px;
+  font-size: 9px;
+  font-weight: 720;
+  display: flex;
+}
+
+.stock-status i {
+  background: #78ae2a;
+  border-radius: 50%;
+  width: 7px;
+  height: 7px;
+  box-shadow: 0 0 0 4px #78ae2a1d;
+}
+
+.modal-benefits {
+  margin-bottom: 11px;
+}
+
+.modal-benefits span {
+  font-size: 9px;
+}
+
+.editorial-image img {
+  object-position: 62% center;
+}
+
+@media (max-width: 700px) {
+  .catalog-status {
+    flex-wrap: wrap;
+    line-height: 1.5;
+  }
+
+  .product-media img {
+    padding: 12px 14px 8px;
+  }
+
+  .variant-summary {
+    font-size: 7px;
+  }
+
+  .product-modal {
+    grid-template-columns: 1fr;
+  }
+
+  .product-modal-image {
+    min-height: 245px;
+    max-height: 285px;
+  }
+
+  .product-modal-image img {
+    padding: 22px;
+  }
+
+  .product-modal-copy {
+    padding: 27px 23px 28px;
+  }
+
+  .variant-picker button {
+    min-height: 34px;
+  }
+}

@@ -6,11 +6,13 @@ Loja virtual de suplementos, acessórios e itens fitness criada para um trabalho
 
 O projeto é publicado automaticamente no GitHub Pages:
 
-**https://joao9435531-dotcom.github.io/maxfit/**
+**https://yasmim477.github.io/maxfit/**
 
 ## Funcionalidades
 
-- catálogo profissional com 12 produtos carregados do Supabase;
+- catálogo profissional com 21 linhas de produto e 46 opções de sabor, cor ou tamanho carregadas do Supabase;
+- imagens originais e realistas da linha Maxfit, otimizadas em WebP;
+- seletor de variações que adiciona ao carrinho o SKU escolhido;
 - busca, categorias, ordenação e detalhes dos produtos;
 - carrinho responsivo com cupom `MAX10` e cálculo de frete demonstrativo;
 - cadastro, login e logout com Supabase Auth;
@@ -32,18 +34,21 @@ O navegador usa somente a chave **publicável** do Supabase. Nenhuma chave `serv
 
 ## Desenvolvimento local
 
-Requer Node.js 22 ou superior.
+Requer Node.js 20 ou superior.
 
 ```bash
+cd source
 npm install
-npm run dev:pages
+npm run dev
 ```
 
 Para gerar a versão do GitHub Pages:
 
 ```bash
-npm run build:pages
+npm run test
 ```
+
+O comando de teste compila o TypeScript, recria o `index.html` do GitHub Pages e valida o catálogo, as imagens e a ausência de chaves secretas.
 
 O esquema do banco está documentado em `supabase/migrations/`.
 
