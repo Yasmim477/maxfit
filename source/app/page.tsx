@@ -106,7 +106,10 @@ const formatPhone = (value: string) => {
   if (digits.length <= 10) return digits.replace(/^(\d{0,2})(\d{0,4})(\d{0,4}).*/, (_match, ddd, first, last) => [ddd && `(${ddd}`, ddd.length === 2 && ") ", first, last && `-${last}`].filter(Boolean).join(""));
   return digits.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
 };
-const formatDate = (value: string | Date) => new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(value));
+const formatDate = (value: string | Date) => {
+  const date = typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) ? new Date(`${value}T12:00:00`) : new Date(value);
+  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", year: "numeric" }).format(date);
+};
 const formatOrderNumber = (id: string) => `#MF-${id.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
 const addBusinessDays = (start: Date, days: number) => {
   const result = new Date(start);
