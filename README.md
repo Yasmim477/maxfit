@@ -18,6 +18,11 @@ O projeto é publicado automaticamente no GitHub Pages:
 - cadastro, login e logout com Supabase Auth;
 - carrinho sincronizado no banco para usuários conectados;
 - pedidos demonstrativos registrados no banco;
+- checkout em etapas com endereço de entrega salvo na conta;
+- prazo de entrega simulado de acordo com o CEP informado;
+- pagamento PIX totalmente fictício, sem movimentação de dinheiro;
+- área **Minhas compras** com itens, valores, endereço, pagamento e previsão de entrega;
+- criação transacional de pedidos no banco, com valores recalculados a partir do catálogo;
 - proteção por Row Level Security (RLS), para cada usuário acessar somente os próprios dados;
 - layout adaptado para celular e computador.
 
@@ -48,7 +53,9 @@ Para gerar a versão do GitHub Pages:
 npm run test
 ```
 
-O comando de teste compila o TypeScript, recria o `index.html` do GitHub Pages e valida o catálogo, as imagens e a ausência de chaves secretas.
+O comando de teste compila o TypeScript, recria o `index.html` do GitHub Pages e valida o checkout, o catálogo, as imagens e a ausência de chaves secretas. O GitHub Actions executa essa validação antes de cada publicação.
+
+> O checkout é acadêmico. A chave PIX usa o domínio reservado `.example` e não recebe pagamentos reais.
 
 O esquema do banco está documentado em `supabase/migrations/`.
 
