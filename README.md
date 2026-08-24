@@ -1,5 +1,13 @@
 # Maxfit
 
+Membros responsáveis
+
+- Yasmim
+- Lorrane
+- Analice
+
+Turma: 3001
+
 Loja virtual de suplementos, acessórios e itens fitness criada para um trabalho escolar.
 
 ## Site público
