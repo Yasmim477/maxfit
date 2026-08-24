@@ -1,14 +1,12 @@
 # Maxfit
-Membros responsáveis
 
-Yasmim
+<div align="center">
+  <h2>👥 Membros responsáveis</h2>
+  <h1>Yasmim • Lorrane • Analice</h1>
+  <h3>Turma 3001</h3>
+</div>
 
-Lorrane
-
-Analice
-
-Turma 3001
-
+---
 
 Loja virtual de suplementos, acessórios e itens fitness criada para um trabalho escolar.
 
